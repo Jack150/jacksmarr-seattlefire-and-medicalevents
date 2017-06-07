@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.Default.css" />
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.Default.css" /> -->
     <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
     <style>
@@ -121,8 +121,10 @@
             ext: 'png'
         }).addTo(map);
 
-        var layer = omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
+        // first load the data
+        omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
             .on('ready', function(e) {
+                // send the GeoJSON to the drawMap function
                 drawMap(e.target.toGeoJSON());
             })
             .on('error', function(e) {
@@ -131,34 +133,76 @@
                 console.log(e)
             });
 
-        var commonStyles = {
-           weight: 1,
-           stroke: 1,
-           fillOpacity: .8,
-           radius: 1
-       };
-
         function drawMap(data) {
 
-            var markers = L.markerClusterGroup();
-
-            // for all our data features
-            data.features.forEach(function(d, i) {
-
-                // create a new Leaflet marker
-                var marker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]));
-
-                // add the marker to the markerClusterGroup
-                markers.addLayer(marker);
+            // create a couple Leaflet icons
+            var fireIcon = L.icon({
+                iconUrl: 'images/firetruck.svg',
+                iconSize: [50, 50]
             });
 
-            // add the makerclusters to the map
-            markers.addTo(map);
+            var ambulanceIcon = L.icon({
+                iconUrl: 'images/ambulance.svg',
+                iconSize: [50, 50]
+            });
+
+            // create separate markerclusters
+            var fires = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    return fireIcon;
+                }
+            });
+
+            var medics = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    return ambulanceIcon;
+                }
+            });
+
+            // loop through the data and parse the fires from the medics
+            data.features.forEach(function(d, i) {
+
+                // if it's a fire call
+                if (d.properties.Type === "fire") {
+                    // create a new Leaflet marker
+                    var fireMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
+                        icon: fireIcon
+                    });
+
+                    // add to the markercluser layergroup
+                    fires.addLayer(fireMarker);
+
+                } else if (d.properties.Type === "Medic") {
+                    // do the same for the medics
+                    var medicsMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
+                        icon: ambulanceIcon
+                    });
+                    medics.addLayer(medicsMarker);
+                }
+
+            });
+
+            // add the fires makerclusters to the map
+            fires.addTo(map);
+
+            // add the medics makerclusters to the map
+            medics.addTo(map);
+
+            // sources for the layer control
+            var sourcesLayers = {
+                "<b style='color:#dc2b28'>Fire calls</b>": fires,
+                "<b style='color:#448ee4'>Medic calls</b>": medics
+            }
+
+            // create layer control and add to map
+            L.control.layers(null, sourcesLayers, {
+                collapsed: false
+            }).addTo(map);
 
         }
 
         function createSliderUI() {
-
+            // slider code goes in here
         }
     </script>
 
