@@ -94,6 +94,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
 
     <script>
         // map options
@@ -115,6 +116,16 @@
             subdomains: 'abcd',
             ext: 'png'
         }).addTo(map);
+
+        var layer = omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
+            .on('ready', function(e) {
+                console.log(e.target.toGeoJSON());
+            })
+            .on('error', function(e) {
+                // fired if the layer can't be loaded over AJAX
+                // or can't be parsed
+                console.log(e)
+            });
 
         function drawMap(firestation, colorize) {
 
