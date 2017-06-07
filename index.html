@@ -7,6 +7,8 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.Default.css" />
     <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
     <style>
@@ -94,6 +96,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.0.0/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
 
     <script>
@@ -104,7 +107,8 @@
             dragging: true,
             zoomControl: true,
             center: [47.5, -122.3],
-            zoom: 10
+            zoom: 10,
+            preferCanvas: true
         }
 
         // create the Leaflet map
@@ -119,7 +123,7 @@
 
         var layer = omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
             .on('ready', function(e) {
-                console.log(e.target.toGeoJSON());
+                drawMap(e.target.toGeoJSON());
             })
             .on('error', function(e) {
                 // fired if the layer can't be loaded over AJAX
@@ -127,56 +131,35 @@
                 console.log(e)
             });
 
-        function drawMap(firestation, colorize) {
+        var commonStyles = {
+           weight: 1,
+           stroke: 1,
+           fillOpacity: .8,
+           radius: 1
+       };
 
+        function drawMap(data) {
 
-            // create Leaflet object with geometry data and add to map
-            var dataLayer = L.geoJson(firestation, {
-                style: function(feature) {
-                    return {
-                        color: 'red',
-                        weight: 1,
-                        fillOpacity: 1,
-                        fillColor: '#1f78b4'
-                    };
+            var markers = L.markerClusterGroup();
 
-                }
+            // for all our data features
+            data.features.forEach(function(d, i) {
 
-            }).addTo(map);
+                // create a new Leaflet marker
+                var marker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]));
 
-            createSliderUI(dataLayer, colorize);
-            // first set the zoom/center to the dataLayer's extent
-            map.fitBounds(dataLayer.getBounds());
-            // then back the zoom level off a bit (since we're viewing the map full screen)
-            map.setZoom(map.getZoom() - .2);
-            updateMap(dataLayer, colorize, '2016')
-        }
-
-        function createSliderUI(dataLayer, colorize) { //start of createSliderUI function
-            var sliderControl = L.control({
-                position: 'bottomleft'
+                // add the marker to the markerClusterGroup
+                markers.addLayer(marker);
             });
 
-            sliderControl.onAdd = function(map) {
+            // add the makerclusters to the map
+            markers.addTo(map);
 
-                var slider = L.DomUtil.get("ui-controls");
+        }
 
-                L.DomEvent.disableScrollPropagation(slider);
+        function createSliderUI() {
 
-                L.DomEvent.disableClickPropagation(slider);
-
-                return slider;
-            }
-
-            sliderControl.addTo(map);
-            // select the form element
-            $(".year-slider")
-                .on("input change", function() {
-                    var currentYear = $(this).val();
-                    updateMap(dataLayer, colorize, currentYear);
-                    $('.legend h3 span').html(currentYear);
-                });
-        } //end of createSliderUI;
+        }
     </script>
 
 
