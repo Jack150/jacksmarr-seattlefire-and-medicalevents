@@ -7,6 +7,8 @@
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.css" />
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.Default.css" /> -->
     <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
     <style>
@@ -17,11 +19,11 @@
             font-family: Lato, sans-serif;
             color: #0D0000;
         }
-        
+
         header {
             padding: 6px 10%;
         }
-        
+
         h1 {
             position: absolute;
             z-index: 650;
@@ -34,69 +36,29 @@
             background: rgba(25, 25, 25, 0.8);
             border-radius: 5px;
         }
-        
+
         h2 {
             display: inline-block;
             color: #001323;
         }
-        
+
         #map {
             position: absolute;
             width: 100%;
             top: 0;
             bottom: 0;
         }
-        
+
         footer {
             padding: 6px 10%;
             width: 80%;
         }
-        
+
         p {
             font-size: 1em;
             color: #001323;
         }
-        
-        .legend {
-            padding: 6px 8px;
-            font-size: 1em;
-            background: rgba(75, 75, 75, 0.8);
-            color: whitesmoke;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            width: 160px;
-        }
-        
-        .legend h3 {
-            font-size: 1.1em;
-            font-weight: bold;
-            line-height: 1em;
-            color: whitesmoke;
-            margin: 0;
-        }
-        
-        .legend h3 span {
-            font-size: 1.3em;
-            margin: 0 20px 0 0;
-        }
-        
-        .legend ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 12px 4px 0;
-        }
-        
-        .legend li {
-            height: 22px;
-        }
-        
-        .legend span {
-            width: 30px;
-            height: 20px;
-            float: left;
-            margin-right: 10px;
-        }
-        
+
         #ui-controls {
             width: 176px;
             padding: 8px 25px 8px 15px;
@@ -105,20 +67,20 @@
             border-radius: 5px;
             color: whitesmoke;
         }
-        
+
         #ui-controls .min {
             float: left;
         }
-        
+
         #ui-controls .max {
             float: right;
             margin-right: -15px;
         }
-        
+
         .year-slider {
             width: 100%;
         }
-        
+
         label {
             font-size: 1.1em;
             font-weight: bold;
@@ -134,7 +96,9 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-    
+    <script src="https://unpkg.com/leaflet.markercluster@1.0.0/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
+
     <script>
         // map options
         var options = {
@@ -143,7 +107,8 @@
             dragging: true,
             zoomControl: true,
             center: [47.5, -122.3],
-            zoom: 10
+            zoom: 10,
+            preferCanvas: true
         }
 
         // create the Leaflet map
@@ -156,163 +121,89 @@
             ext: 'png'
         }).addTo(map);
 
-        
-        function processData(counties, data) {
-            //loop thru geoJson data's features
-            for (var county in counties.features) {
-                //declare props variable
-                var props = counties.features[county].properties;
-                //for each state, loop through the csv data
-                for (var d in data.data) {
-                    //if the FIPS code for the state matches that of the csv data, add the csv data to that geoJson features properties
-                    if (props.GEOID == String(data.data[d].STATE_FIP) + String(data.data[d].COUNTY_FIP)) {
-                        counties.features[county].properties = data.data[d];
-                        break; //breaks out of inner loop once a match is made
-                    }
+        // first load the data
+        omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
+            .on('ready', function(e) {
+                // send the GeoJSON to the drawMap function
+                drawMap(e.target.toGeoJSON());
+            })
+            .on('error', function(e) {
+                // fired if the layer can't be loaded over AJAX
+                // or can't be parsed
+                console.log(e)
+            });
 
-                    
+        function drawMap(data) {
 
+            // create a couple Leaflet icons
+            var fireIcon = L.icon({
+                iconUrl: 'images/firetruck.svg',
+                iconSize: [50, 50]
+            });
 
-                }
-            }
+            var ambulanceIcon = L.icon({
+                iconUrl: 'images/ambulance.svg',
+                iconSize: [50, 50]
+            });
 
-            var rates = [];
-            //itterate through all the counties
-            counties.features.map(function(county) {
-                //itterates through all the props of each county
-                for (var prop in county.properties) {
-                    //conditionally test each attribute to verify it's timestamp value (and not one of our FIPS codes)
-                    if ($.isNumeric(county.properties[prop]) && prop != 'GEOID') {
-                        //pushes the timestamp value into the empty array
-                        rates.push(Number(county.properties[prop]));
-                    }
+            // create separate markerclusters
+            var fires = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    return fireIcon;
                 }
             });
 
-
-
-
-            //console.log(rates);
-            //determine class breaks (here using our 'rates' array, a quantile(q) method, and  classes)
-            var breaks = chroma.limits(rates, 'q', 5);
-            //create our color generator fucntion using ColorBewer's Orange-red color scheme that returns 5 classes of colors using our break values, and assien this variablet to colorize.
-            var colorize = chroma.scale(chroma.brewer.OrRd).classes(breaks).mode('lab');
-            //console.log(colorize);
-            // var color = colorize(20);
-            // console.log(color);
-
-            drawMap();
-            //drawLegend(breaks, colorize);
-        } //end of processData;
-        
-        
-        
-        function drawMap(firestation, colorize) {
-
-
-            // create Leaflet object with geometry data and add to map
-            var dataLayer = L.geoJson(firestation, {
-                style: function(feature) {
-                    return {
-                        color: 'red',
-                        weight: 1,
-                        fillOpacity: 1,
-                        fillColor: '#1f78b4'
-                    };
-
+            var medics = L.markerClusterGroup({
+                iconCreateFunction: function(cluster) {
+                    return ambulanceIcon;
                 }
+            });
 
-            }).addTo(map);
+            // loop through the data and parse the fires from the medics
+            data.features.forEach(function(d, i) {
 
-            createSliderUI(dataLayer, colorize);
-            // first set the zoom/center to the dataLayer's extent
-            map.fitBounds(dataLayer.getBounds());
-            // then back the zoom level off a bit (since we're viewing the map full screen)
-            map.setZoom(map.getZoom() - .2);
-            updateMap(dataLayer, colorize, '2016')
-        }
-
-        function updateMap(dataLayer, colorize, currentYear) {
-
-            dataLayer.eachLayer(function(layer) {
-                    // shortcut reference for layer properties
-                    var props = layer.feature.properties;
-                    // set the fill color of layer based on its normalized data value
-                    layer.setStyle({
-                        fillColor: colorize(Number(props[currentYear]))
+                // if it's a fire call
+                if (d.properties.Type === "fire") {
+                    // create a new Leaflet marker
+                    var fireMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
+                        icon: fireIcon
                     });
 
-                    var tooltipInfo = "<b>" + currentYear + "</b></br>" + "<b>" + props["NAME"] +
-                        "</b></br>" + props[currentYear] + "911 Calls"
-                        
-                // bind a tooltip to layer with county-specific information
-                layer.bindTooltip(tooltipInfo, {
-                    sticky: true
+                    // add to the markercluser layergroup
+                    fires.addLayer(fireMarker);
 
-                });
-
+                } else if (d.properties.Type === "Medic") {
+                    // do the same for the medics
+                    var medicsMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
+                        icon: ambulanceIcon
+                    });
+                    medics.addLayer(medicsMarker);
+                }
 
             });
 
+            // add the fires makerclusters to the map
+            fires.addTo(map);
 
-        } //end of updateMap;
+            // add the medics makerclusters to the map
+            medics.addTo(map);
 
-        function drawLegend(breaks, colorize) {
-            var legendControl = L.control({
-                position: 'topright'
-            });
-
-            legendControl.onAdd = function(map) {
-
-                var legend = L.DomUtil.create('div', 'legend');
-                return legend;
-
-            };
-
-            legendControl.addTo(map);
-
-            var legend = $('.legend').html("<h3><span>2016</span> 911 Calss</h3><ul>");
-
-            for (var i = 0; i < breaks.length - 1; i++) {
-
-                var color = colorize(breaks[i], breaks);
-
-                var classRange = '<li><span style="background:' + color + '"></span> ' +
-                    breaks[i].toLocaleString() + ' &mdash; ' +
-                    breaks[i + 1].toLocaleString() + '</li>'
-
-                $('.legend ul').append(classRange);
+            // sources for the layer control
+            var sourcesLayers = {
+                "<b style='color:#dc2b28'>Fire calls</b>": fires,
+                "<b style='color:#448ee4'>Medic calls</b>": medics
             }
 
-            legend.append("</ul>");
+            // create layer control and add to map
+            L.control.layers(null, sourcesLayers, {
+                collapsed: false
+            }).addTo(map);
 
-        } //end of function drawLegend;
+        }
 
-        function createSliderUI(dataLayer, colorize) { //start of createSliderUI function
-            var sliderControl = L.control({
-                position: 'bottomleft'
-            });
-
-            sliderControl.onAdd = function(map) {
-
-                var slider = L.DomUtil.get("ui-controls");
-
-                L.DomEvent.disableScrollPropagation(slider);
-
-                L.DomEvent.disableClickPropagation(slider);
-
-                return slider;
-            }
-
-            sliderControl.addTo(map);
-            // select the form element
-            $(".year-slider")
-                .on("input change", function() {
-                    var currentYear = $(this).val();
-                    updateMap(dataLayer, colorize, currentYear);
-                    $('.legend h3 span').html(currentYear);
-                });
-        } //end of createSliderUI;
+        function createSliderUI() {
+            // slider code goes in here
+        }
     </script>
 
 
