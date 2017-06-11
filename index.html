@@ -92,7 +92,7 @@
     <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
     <div id="map"></div>
     <div id="ui-controls">
-        <input type="range" min="2015" , max="2017" , value="2016" , step="1" class="year-slider"></input>
+        <input type="range" min="2014" , max="2016" , value="2016" , step="1" class="year-slider"></input>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
@@ -134,6 +134,11 @@
             });
 
         function drawMap(data) {
+           //var firestationIcon = L.icon({    //add the firestations icons, where do I find it?
+             //   iconUrl: 'images/house.svg',
+               // iconSize: [50, 50],
+                
+            //});
 
             // create a couple Leaflet icons
             var fireIcon = L.icon({
@@ -181,7 +186,9 @@
                 }
 
             });
-
+            
+            //firestations.addTo(map);
+            
             // add the fires makerclusters to the map
             fires.addTo(map);
 
@@ -198,11 +205,38 @@
             L.control.layers(null, sourcesLayers, {
                 collapsed: false
             }).addTo(map);
+            
+            createSliderUI(year)
 
         }
 
-        function createSliderUI() {
+        function createSliderUI() {   //create slider for each year 2014,2015, 2016
             // slider code goes in here
+            function createSliderUI(dataLayer) { //start of createSliderUI function
+            var sliderControl = L.control({
+                position: 'bottomleft'
+            });
+
+            sliderControl.onAdd = function(map) {
+
+                var slider = L.DomUtil.get("ui-controls");
+
+                L.DomEvent.disableScrollPropagation(slider);
+
+                L.DomEvent.disableClickPropagation(slider);
+
+                return slider;
+            }
+
+            sliderControl.addTo(map);
+            // select the form element
+            $(".year-slider")
+                .on("input change", function() {
+                    var currentYear = $(this).val();
+                    updateMap(dataLayer, currentYear);
+                    $('.legend h3 span').html(currentYear);
+                });
+        } //end of createSliderUI;
         }
     </script>
 
