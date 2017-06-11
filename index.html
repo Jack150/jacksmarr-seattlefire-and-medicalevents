@@ -92,7 +92,11 @@
     <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
     <div id="map"></div>
     <div id="ui-controls">
+<<<<<<< HEAD
         <input type="range" min="2014" , max="2016" , value="2016" , step="1" class="year-slider"></input>
+=======
+        <input type="range" min="2015" , max="2017" , value="2016" , step="1" class="year-slider"></input>
+>>>>>>> origin/master
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
@@ -134,11 +138,14 @@
             });
 
         function drawMap(data) {
+<<<<<<< HEAD
            //var firestationIcon = L.icon({    //add the firestations icons, where do I find it?
              //   iconUrl: 'images/house.svg',
                // iconSize: [50, 50],
                 
             //});
+=======
+>>>>>>> origin/master
 
             // create a couple Leaflet icons
             var fireIcon = L.icon({
@@ -186,9 +193,13 @@
                 }
 
             });
+<<<<<<< HEAD
             
             //firestations.addTo(map);
             
+=======
+
+>>>>>>> origin/master
             // add the fires makerclusters to the map
             fires.addTo(map);
 
@@ -205,6 +216,7 @@
             L.control.layers(null, sourcesLayers, {
                 collapsed: false
             }).addTo(map);
+<<<<<<< HEAD
             
             createSliderUI(year)
 
@@ -237,6 +249,13 @@
                     $('.legend h3 span').html(currentYear);
                 });
         } //end of createSliderUI;
+=======
+
+        }
+
+        function createSliderUI() {
+            // slider code goes in here
+>>>>>>> origin/master
         }
     </script>
 
