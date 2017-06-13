@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 
@@ -20,11 +19,9 @@
             font-family: Lato, sans-serif;
             color: #0D0000;
         }
-
         header {
             padding: 6px 10%;
         }
-
         h1 {
             position: absolute;
             z-index: 650;
@@ -37,29 +34,24 @@
             background: rgba(25, 25, 25, 0.8);
             border-radius: 5px;
         }
-
         h2 {
             display: inline-block;
             color: #001323;
         }
-
         #map {
             position: absolute;
             width: 100%;
             top: 0;
             bottom: 0;
         }
-
         footer {
             padding: 6px 10%;
             width: 80%;
         }
-
         p {
             font-size: 1em;
             color: #001323;
         }
-
         #ui-controls {
             width: 176px;
             padding: 8px 25px 8px 15px;
@@ -68,277 +60,16 @@
             border-radius: 5px;
             color: whitesmoke;
         }
-
         #ui-controls .min {
             float: left;
         }
-
         #ui-controls .max {
             float: right;
             margin-right: -15px;
         }
-
         .year-slider {
             width: 100%;
         }
-
-        label {
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
-    <div id="map"></div>
-    
-    <div id="ui-controls">
-
-        <input type="range" min="2015" , max="2017" , value="2016" , step="1" class="year-slider"></input>
-
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.0.0/dist/leaflet.markercluster.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
-
-    <script>
-        // map options
-        var options = {
-            scrollWheelZoom: true,
-            zoomSnap: .1,
-            dragging: true,
-            zoomControl: true,
-            center: [47.5, -122.3],
-            zoom: 10,
-            preferCanvas: true
-        }
-
-        // create the Leaflet map
-        var map = L.map('map', options);
-
-        // request tiles and add to map
-        var tiles = L.tileLayer('http://{s}.tile.stamen.com/toner-background/{z}/{x}/{y}.{ext}', {
-            attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            subdomains: 'abcd',
-            ext: 'png'
-        }).addTo(map);
-
-        // first load the data
-        omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
-            .on('ready', function(e) {
-                // send the GeoJSON to the drawMap function
-                drawMap(e.target.toGeoJSON());
-            })
-            .on('error', function(e) {
-                // fired if the layer can't be loaded over AJAX
-                // or can't be parsed
-                console.log(e)
-            });
-        
-
-        function drawMap(data) {
-
-           //var firestationIcon = L.icon({    //add the firestations icons, where do I find it?
-             //   iconUrl: 'images/house.svg',
-               // iconSize: [50, 50],
-                
-            //});
-
-            
-            // create a couple Leaflet icons
-            var fireIcon = L.icon({
-                iconUrl: 'images/firetruck.svg',
-                iconSize: [50, 50]
-            });
-
-            var ambulanceIcon = L.icon({
-                iconUrl: 'images/ambulance.svg',
-                iconSize: [50, 50]
-            });
-
-            // create separate markerclusters
-            var fires = L.markerClusterGroup({
-                iconCreateFunction: function(cluster) {
-                    return fireIcon;
-                }
-            });
-
-            var medics = L.markerClusterGroup({
-                iconCreateFunction: function(cluster) {
-                    return ambulanceIcon;
-                }
-            });
-
-            // loop through the data and parse the fires from the medics
-            data.features.forEach(function(d, i) {
-
-                // if it's a fire call
-                if (d.properties.Type === "fire") {
-                    // create a new Leaflet marker
-                    var fireMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
-                        icon: fireIcon
-                    });
-
-                    // add to the markercluser layergroup
-                    fires.addLayer(fireMarker);
-
-                } else if (d.properties.Type === "Medic") {
-                    // do the same for the medics
-                    var medicsMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
-                        icon: ambulanceIcon
-                    });
-                    medics.addLayer(medicsMarker);
-                }
-
-            });
-
-            //firestations.addTo(map);
-            
-
-            // add the fires makerclusters to the map
-            fires.addTo(map);
-
-            // add the medics makerclusters to the map
-            medics.addTo(map);
-
-            // sources for the layer control
-            var sourcesLayers = {
-                "<b style='color:#dc2b28'>Fire calls</b>": fires,
-                "<b style='color:#448ee4'>Medic calls</b>": medics
-            }
-
-            // create layer control and add to map
-            L.control.layers(null, sourcesLayers, {
-                collapsed: false
-            }).addTo(map);
-
-         
-        }
-
-        function createSliderUI() {   //create slider for each year 2014,2015, 2016
-            // slider code goes in here
-            function createSliderUI(dataLayer) { //start of createSliderUI function
-            var sliderControl = L.control({
-                position: 'bottomleft'
-            });
-
-            sliderControl.onAdd = function(map) {
-
-                var slider = L.DomUtil.get("ui-controls");
-
-                L.DomEvent.disableScrollPropagation(slider);
-
-                L.DomEvent.disableClickPropagation(slider);
-
-                return slider;
-            }
-
-            sliderControl.addTo(map);
-            // select the form element
-            $(".year-slider")
-                .on("input change", function() {
-                    var currentYear = $(this).val();
-                    updateMap(dataLayer, currentYear);
-                    $('.legend h3 span').html(currentYear);
-                });
-        } //end of createSliderUI;
-
-
-        }
-
-        createSliderUI(year);
-    </script>
-
-
-</body>
-
-</html>
-=======
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset=utf-8 />
-    <title>Seattle Fire and Medical </title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.css" />
-    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.Default.css" /> -->
-    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
-
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: whitesmoke;
-            font-family: Lato, sans-serif;
-            color: #0D0000;
-        }
-
-        header {
-            padding: 6px 10%;
-        }
-
-        h1 {
-            position: absolute;
-            z-index: 650;
-            top: 10px;
-            left: 55px;
-            padding: 8px 15px;
-            margin: 0;
-            color: whitesmoke;
-            font-size: 1.5em;
-            background: rgba(25, 25, 25, 0.8);
-            border-radius: 5px;
-        }
-
-        h2 {
-            display: inline-block;
-            color: #001323;
-        }
-
-        #map {
-            position: absolute;
-            width: 100%;
-            top: 0;
-            bottom: 0;
-        }
-
-        footer {
-            padding: 6px 10%;
-            width: 80%;
-        }
-
-        p {
-            font-size: 1em;
-            color: #001323;
-        }
-
-        #ui-controls {
-            width: 176px;
-            padding: 8px 25px 8px 15px;
-            background: rgba(75, 75, 75, 0.8);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            color: whitesmoke;
-        }
-
-        #ui-controls .min {
-            float: left;
-        }
-
-        #ui-controls .max {
-            float: right;
-            margin-right: -15px;
-        }
-
-        .year-slider {
-            width: 100%;
-        }
-
         label {
             font-size: 1.1em;
             font-weight: bold;
@@ -368,32 +99,25 @@
             zoom: 10,
             preferCanvas: true
         }
-
         // create the Leaflet map
         var map = L.map('map', options);
-
         // request tiles and add to map
         var tiles = L.tileLayer('http://{s}.tile.stamen.com/toner-background/{z}/{x}/{y}.{ext}', {
             attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             subdomains: 'abcd',
             ext: 'png'
         }).addTo(map);
-
         // some global vars for ease of development
         var fireIcon = L.icon({
             iconUrl: 'images/firetruck.svg',
             iconSize: [50, 50]
         });
-
         var ambulanceIcon = L.icon({
             iconUrl: 'images/ambulance.svg',
             iconSize: [50, 50]
         });
-
         // more globals for easier reference below
         var fireClusterGroup, medicsClusterGroup;
-
-
         // first load the data
         omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
             .on('ready', function(e) {
@@ -405,126 +129,85 @@
                 // or can't be parsed
                 console.log(e)
             });
-
         function drawMap(data) {
-
             // create separate markerclusters
             fireClusterGroup = L.markerClusterGroup({
                 iconCreateFunction: function(cluster) {
                     return fireIcon;
                 }
             }).addTo(map);
-
             medicsClusterGroup = L.markerClusterGroup({
                 iconCreateFunction: function(cluster) {
                     return ambulanceIcon;
                 }
             }).addTo(map);;
-
             // sources for the layer control
             var sourcesLayers = {
                 "<b style='color:#dc2b28'>Fire calls</b>": fireClusterGroup,
                 "<b style='color:#448ee4'>Medic calls</b>": medicsClusterGroup
             }
-
             // create layer control and add to map
             L.control.layers(null, sourcesLayers, {
                 collapsed: false
             }).addTo(map);
-
             // call to initially draw the markers with current year
             updateMap(data, "2014");
-
             // create the slider UI
             createSliderUI(data);
-
         }
-
         function createSliderUI(data) {
-
-
             var sliderControl = L.control({
                 position: 'bottomleft'
             });
-
             sliderControl.onAdd = function(map) {
-
                 var slider = L.DomUtil.get("ui-controls");
-
                 L.DomEvent.disableScrollPropagation(slider);
-
                 L.DomEvent.disableClickPropagation(slider);
-
                 return slider;
             }
-
             sliderControl.addTo(map);
-
-
             // select the form element
             $(".year-slider")
                 .on("input change", function() {
-
                     // get the current target year
                     var currentYear = $(this).val();
-
                     // update map with new year
                     updateMap(data, currentYear);
-
                     // $('.legend h3 span').html(currentYear);
                 });
         } //end of createSliderUI;
-
         function updateMap(data, currentYear) {
-
             // first clear the layers
             medicsClusterGroup.clearLayers();
             fireClusterGroup.clearLayers();
-
             // get all the markers for the first year pused into arrays
             var firesMarkerArray = filterMarkers(data, 'fire', currentYear, fireIcon);
             var medicsMarkerArray = filterMarkers(data, 'Medic', currentYear, ambulanceIcon);
-
             // add array of markers to to the markercluser layergroup
             fireClusterGroup.addLayers(firesMarkerArray);
             medicsClusterGroup.addLayers(medicsMarkerArray);
-
         }
-
         function filterMarkers(data, type, year, icon) {
-
-
             var markersArray = [], // empty array
                 marker;  // declared here for faster reassignment below
-
             // loop through the data and parse the fires from the medics
             data.features.forEach(function(d, i) {
-
                 // if it's the current type (fire or Medic)
                 if (d.properties.Type === type && d.properties.Year === year) {
-
                     // create a new Leaflet marker
                     marker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
                         icon: icon
                     });
-
                     // push that to an array
                     markersArray.push(marker);
-
                 }
-
             });
-
             // return the array of markers
             return markersArray;
-
         }
-
-
     </script>
 
 
 </body>
 
 </html>
->>>>>>> origin/master
