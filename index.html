@@ -121,15 +121,41 @@
         // first load the data
         omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
             .on('ready', function(e) {
-                // send the GeoJSON to the drawMap function
-                drawMap(e.target.toGeoJSON());
+            
+                omnivore.csv('data/firestations_seattle.csv') 
+                   .on('ready', function(fs){
+                    
+                            // send the GeoJSON to the drawMap function
+                           drawMap(e.target.toGeoJSON(), fs.target.toGeoJSON());
+                
+                    
+                }).on('error', function(error){
+                    console.log(error);
+                })
+
             })
             .on('error', function(e) {
                 // fired if the layer can't be loaded over AJAX
                 // or can't be parsed
                 console.log(e)
             });
-        function drawMap(data) {
+        function drawMap(data, firestationsData) {
+            
+             // some global vars for ease of development
+             var firestationIcon = L.icon({
+                iconUrl: 'images/firetruck.svg',
+                 iconSize: [50, 50]
+              });
+            
+            
+            L.geoJson(firestationsData, {
+                pointToLayer: function(feature, ll){
+                    return  L.marker(ll, {
+                        icon: firestationIcon
+                    })
+                }
+            }).addTo(map);
+            
             // create separate markerclusters
             fireClusterGroup = L.markerClusterGroup({
                 iconCreateFunction: function(cluster) {
