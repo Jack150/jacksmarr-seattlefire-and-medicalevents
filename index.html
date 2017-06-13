@@ -92,15 +92,11 @@
     <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
     <div id="map"></div>
     <div id="ui-controls">
-<<<<<<< HEAD
-        <input type="range" min="2014" , max="2016" , value="2016" , step="1" class="year-slider"></input>
-=======
-        <input type="range" min="2015" , max="2017" , value="2016" , step="1" class="year-slider"></input>
->>>>>>> origin/master
+        <input type="range" min="2014" , max="2016" , value="2014" , step="1" class="year-slider"></input>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.0.0/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.0.5/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
 
     <script>
@@ -125,6 +121,21 @@
             ext: 'png'
         }).addTo(map);
 
+        // some global vars for ease of development
+        var fireIcon = L.icon({
+            iconUrl: 'images/firetruck.svg',
+            iconSize: [50, 50]
+        });
+
+        var ambulanceIcon = L.icon({
+            iconUrl: 'images/ambulance.svg',
+            iconSize: [50, 50]
+        });
+
+        // more globals for easier reference below
+        var fireClusterGroup, medicsClusterGroup;
+
+
         // first load the data
         omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
             .on('ready', function(e) {
@@ -138,93 +149,42 @@
             });
 
         function drawMap(data) {
-<<<<<<< HEAD
-           //var firestationIcon = L.icon({    //add the firestations icons, where do I find it?
-             //   iconUrl: 'images/house.svg',
-               // iconSize: [50, 50],
-                
-            //});
-=======
->>>>>>> origin/master
-
-            // create a couple Leaflet icons
-            var fireIcon = L.icon({
-                iconUrl: 'images/firetruck.svg',
-                iconSize: [50, 50]
-            });
-
-            var ambulanceIcon = L.icon({
-                iconUrl: 'images/ambulance.svg',
-                iconSize: [50, 50]
-            });
 
             // create separate markerclusters
-            var fires = L.markerClusterGroup({
+            fireClusterGroup = L.markerClusterGroup({
                 iconCreateFunction: function(cluster) {
                     return fireIcon;
                 }
-            });
+            }).addTo(map);
 
-            var medics = L.markerClusterGroup({
+            medicsClusterGroup = L.markerClusterGroup({
                 iconCreateFunction: function(cluster) {
                     return ambulanceIcon;
                 }
-            });
-
-            // loop through the data and parse the fires from the medics
-            data.features.forEach(function(d, i) {
-
-                // if it's a fire call
-                if (d.properties.Type === "fire") {
-                    // create a new Leaflet marker
-                    var fireMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
-                        icon: fireIcon
-                    });
-
-                    // add to the markercluser layergroup
-                    fires.addLayer(fireMarker);
-
-                } else if (d.properties.Type === "Medic") {
-                    // do the same for the medics
-                    var medicsMarker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
-                        icon: ambulanceIcon
-                    });
-                    medics.addLayer(medicsMarker);
-                }
-
-            });
-<<<<<<< HEAD
-            
-            //firestations.addTo(map);
-            
-=======
-
->>>>>>> origin/master
-            // add the fires makerclusters to the map
-            fires.addTo(map);
-
-            // add the medics makerclusters to the map
-            medics.addTo(map);
+            }).addTo(map);;
 
             // sources for the layer control
             var sourcesLayers = {
-                "<b style='color:#dc2b28'>Fire calls</b>": fires,
-                "<b style='color:#448ee4'>Medic calls</b>": medics
+                "<b style='color:#dc2b28'>Fire calls</b>": fireClusterGroup,
+                "<b style='color:#448ee4'>Medic calls</b>": medicsClusterGroup
             }
 
             // create layer control and add to map
             L.control.layers(null, sourcesLayers, {
                 collapsed: false
             }).addTo(map);
-<<<<<<< HEAD
-            
-            createSliderUI(year)
+
+            // call to initially draw the markers with current year
+            updateMap(data, "2014");
+
+            // create the slider UI
+            createSliderUI(data);
 
         }
 
-        function createSliderUI() {   //create slider for each year 2014,2015, 2016
-            // slider code goes in here
-            function createSliderUI(dataLayer) { //start of createSliderUI function
+        function createSliderUI(data) {
+
+
             var sliderControl = L.control({
                 position: 'bottomleft'
             });
@@ -241,22 +201,68 @@
             }
 
             sliderControl.addTo(map);
+
+
             // select the form element
             $(".year-slider")
                 .on("input change", function() {
+
+                    // get the current target year
                     var currentYear = $(this).val();
-                    updateMap(dataLayer, currentYear);
-                    $('.legend h3 span').html(currentYear);
+
+                    // update map with new year
+                    updateMap(data, currentYear);
+
+                    // $('.legend h3 span').html(currentYear);
                 });
         } //end of createSliderUI;
-=======
+
+        function updateMap(data, currentYear) {
+
+            // first clear the layers
+            medicsClusterGroup.clearLayers();
+            fireClusterGroup.clearLayers();
+
+            // get all the markers for the first year pused into arrays
+            var firesMarkerArray = filterMarkers(data, 'fire', currentYear, fireIcon);
+            var medicsMarkerArray = filterMarkers(data, 'Medic', currentYear, ambulanceIcon);
+
+            // add array of markers to to the markercluser layergroup
+            fireClusterGroup.addLayers(firesMarkerArray);
+            medicsClusterGroup.addLayers(medicsMarkerArray);
 
         }
 
-        function createSliderUI() {
-            // slider code goes in here
->>>>>>> origin/master
+        function filterMarkers(data, type, year, icon) {
+
+
+            var markersArray = [], // empty array
+                marker;  // declared here for faster reassignment below
+
+            // loop through the data and parse the fires from the medics
+            data.features.forEach(function(d, i) {
+
+                // if it's the current type (fire or Medic)
+                if (d.properties.Type === type && d.properties.Year === year) {
+
+                    // create a new Leaflet marker
+                    marker = L.marker(L.latLng(d.geometry.coordinates[1], d.geometry.coordinates[0]), {
+                        icon: icon
+                    });
+
+                    // push that to an array
+                    markersArray.push(marker);
+
+                }
+
+            });
+
+            // return the array of markers
+            return markersArray;
+
         }
+
+
     </script>
 
 
