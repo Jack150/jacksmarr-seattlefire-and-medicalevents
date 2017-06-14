@@ -109,8 +109,9 @@
         }).addTo(map);
         // some global vars for ease of development
         var fireIcon = L.icon({
-            iconUrl: 'images/firetruck.svg',
-            iconSize: [50, 50]
+            iconUrl: 'images/fire.svg',
+            iconSize: [50, 50],
+            
         });
         var ambulanceIcon = L.icon({
             iconUrl: 'images/ambulance.svg',
@@ -153,7 +154,10 @@
                     return  L.marker(ll, {
                         icon: firestationIcon
                     })
+                    onEachFeature (firestationsData)
+                        bindTooltip("Station Number:"+ firestation);
                 }
+                
             }).addTo(map);
             
             // create separate markerclusters
