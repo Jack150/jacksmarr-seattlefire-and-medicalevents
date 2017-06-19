@@ -19,9 +19,11 @@
             font-family: Lato, sans-serif;
             color: #0D0000;
         }
+        
         header {
             padding: 6px 10%;
         }
+        
         h1 {
             position: absolute;
             z-index: 650;
@@ -34,24 +36,29 @@
             background: rgba(25, 25, 25, 0.8);
             border-radius: 5px;
         }
+        
         h2 {
             display: inline-block;
             color: #001323;
         }
+        
         #map {
             position: absolute;
             width: 100%;
             top: 0;
             bottom: 0;
         }
+        
         footer {
             padding: 6px 10%;
             width: 80%;
         }
+        
         p {
             font-size: 1em;
             color: #001323;
         }
+        
         #ui-controls {
             width: 176px;
             padding: 8px 25px 8px 15px;
@@ -60,20 +67,25 @@
             border-radius: 5px;
             color: whitesmoke;
         }
+        
         #ui-controls .min {
             float: left;
         }
+        
         #ui-controls .max {
             float: right;
             margin-right: -15px;
         }
+        
         .year-slider {
             width: 100%;
         }
+        
         label {
             font-size: 1.1em;
             font-weight: bold;
         }
+
     </style>
 </head>
 
@@ -81,6 +93,7 @@
     <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
     <div id="map"></div>
     <div id="ui-controls">
+        <label>2014.............2015.............2016</label>
         <input type="range" min="2014" , max="2016" , value="2014" , step="1" class="year-slider"></input>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -111,7 +124,7 @@
         var fireIcon = L.icon({
             iconUrl: 'images/fire.svg',
             iconSize: [50, 50],
-            
+
         });
         var ambulanceIcon = L.icon({
             iconUrl: 'images/ambulance.svg',
@@ -122,17 +135,17 @@
         // first load the data
         omnivore.csv('data/Seattle_Medic_Fire_2014_2016.csv')
             .on('ready', function(e) {
-            
-                omnivore.csv('data/firestations_seattle.csv') 
-                   .on('ready', function(fs){
-                    
-                            // send the GeoJSON to the drawMap function
-                           drawMap(e.target.toGeoJSON(), fs.target.toGeoJSON());
-                
-                    
-                }).on('error', function(error){
-                    console.log(error);
-                })
+
+                omnivore.csv('data/firestations_seattle.csv')
+                    .on('ready', function(fs) {
+
+                        // send the GeoJSON to the drawMap function
+                        drawMap(e.target.toGeoJSON(), fs.target.toGeoJSON());
+
+
+                    }).on('error', function(error) {
+                        console.log(error);
+                    })
 
             })
             .on('error', function(e) {
@@ -140,26 +153,27 @@
                 // or can't be parsed
                 console.log(e)
             });
+
         function drawMap(data, firestationsData) {
-            
-             // some global vars for ease of development
-             var firestationIcon = L.icon({
+
+            // some global vars for ease of development
+            var firestationIcon = L.icon({
                 iconUrl: 'images/firetruck.svg',
-                 iconSize: [50, 50]
-              });
-            
-            
+                iconSize: [50, 50]
+            });
+
+
             L.geoJson(firestationsData, {
-                pointToLayer: function(feature, ll){
-                    return  L.marker(ll, {
+                pointToLayer: function(feature, ll) {
+                    return L.marker(ll, {
                         icon: firestationIcon
                     })
-                    onEachFeature (firestationsData)
-                        bindTooltip("Station Number:"+ firestation);
+                    onEachFeature(firestationsData)
+                    bindTooltip("Station Number:" + firestation);
                 }
-                
+
             }).addTo(map);
-            
+
             // create separate markerclusters
             fireClusterGroup = L.markerClusterGroup({
                 iconCreateFunction: function(cluster) {
@@ -185,6 +199,7 @@
             // create the slider UI
             createSliderUI(data);
         }
+
         function createSliderUI(data) {
             var sliderControl = L.control({
                 position: 'bottomleft'
@@ -217,9 +232,10 @@
             fireClusterGroup.addLayers(firesMarkerArray);
             medicsClusterGroup.addLayers(medicsMarkerArray);
         }
+
         function filterMarkers(data, type, year, icon) {
             var markersArray = [], // empty array
-                marker;  // declared here for faster reassignment below
+                marker; // declared here for faster reassignment below
             // loop through the data and parse the fires from the medics
             data.features.forEach(function(d, i) {
                 // if it's the current type (fire or Medic)
@@ -235,6 +251,7 @@
             // return the array of markers
             return markersArray;
         }
+
     </script>
 
 
