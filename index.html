@@ -85,6 +85,19 @@
             font-size: 1.1em;
             font-weight: bold;
         }
+        
+        {
+            text-shadow: 
+            -1px -1px 0px #000,
+             0px -1px 0px #000,
+             1px -1px 0px #000,
+            -1px  0px 0px #000,
+             1px  0px 0px #000,
+            -1px  1px 0px #000,
+             0px  1px 0px #000,
+             1px  1px 0px #000;
+        }
+        
 
     </style>
 </head>
@@ -186,7 +199,7 @@
             }).addTo(map);;
             // sources for the layer control
             var sourcesLayers = {
-                "<b style='color:#dc2b28'>Fire calls</b>": fireClusterGroup,
+                "<b style='color:#ffff00'>Fire calls</b>": fireClusterGroup,
                 "<b style='color:#448ee4'>Medic calls</b>": medicsClusterGroup
             }
             // create layer control and add to map
