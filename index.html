@@ -108,8 +108,8 @@
             zoomSnap: .1,
             dragging: true,
             zoomControl: true,
-            center: [47.5, -122.3],
-            zoom: 10,
+            center: [47.65, -122.3],
+            zoom: 11,
             preferCanvas: true
         }
         // create the Leaflet map
@@ -168,8 +168,7 @@
                     return L.marker(ll, {
                         icon: firestationIcon
                     })
-                    onEachFeature(firestationsData)
-                    bindTooltip("Station Number:" + firestation);
+                    
                 }
 
             }).addTo(map);
@@ -198,6 +197,13 @@
             updateMap(data, "2014");
             // create the slider UI
             createSliderUI(data);
+            var toolTip = '<b>' + 'Firestation Number:</b><br />' +
+                        layer.feature.properties.firestation;
+                    
+                    layer.bindTooltip(tooltip,{
+                         sticky: true
+                    });
+            
         }
 
         function createSliderUI(data) {
