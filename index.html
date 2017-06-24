@@ -40,8 +40,18 @@
         h2 {
             display: inline-block;
             color: #001323;
+            
         }
         
+        h3 {
+            bottom: 10px;
+            right: 55px;
+            margin: 0;
+            color: whitesmoke;
+            font-size: 1em;
+            background: rgba(25, 25, 25, 0.8);
+            border-radius: 5px;
+        }
         #map {
             position: absolute;
             width: 100%;
@@ -86,17 +96,7 @@
             font-weight: bold;
         }
         
-        {
-            text-shadow: 
-            -1px -1px 0px #000,
-             0px -1px 0px #000,
-             1px -1px 0px #000,
-            -1px  0px 0px #000,
-             1px  0px 0px #000,
-            -1px  1px 0px #000,
-             0px  1px 0px #000,
-             1px  1px 0px #000;
-        }
+        
         
 
     </style>
@@ -104,15 +104,18 @@
 
 <body>
     <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
-    <div id="map"></div>
+    
+        <div id="map"></div>
     <div id="ui-controls">
         <label>2014.............2015.............2016</label>
         <input type="range" min="2014" , max="2016" , value="2014" , step="1" class="year-slider"></input>
     </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.0.5/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
+    
 
     <script>
         // map options
@@ -173,6 +176,8 @@
             var firestationIcon = L.icon({
                 iconUrl: 'images/firetruck.svg',
                 iconSize: [50, 50]
+                
+
             });
 
 
@@ -180,7 +185,12 @@
                 pointToLayer: function(feature, ll) {
                     return L.marker(ll, {
                         icon: firestationIcon
+                        
                     })
+                    
+                    
+                    
+                    
                     
                 }
 
@@ -199,8 +209,9 @@
             }).addTo(map);;
             // sources for the layer control
             var sourcesLayers = {
-                "<b style='color:#ffff00'>Fire calls</b>": fireClusterGroup,
-                "<b style='color:#448ee4'>Medic calls</b>": medicsClusterGroup
+                "<b style='color:#ffa500'>Fire calls</b>": fireClusterGroup,
+                "<b style='color:#448ee4'>Medic calls</b>": medicsClusterGroup,
+                
             }
             // create layer control and add to map
             L.control.layers(null, sourcesLayers, {
@@ -210,14 +221,11 @@
             updateMap(data, "2014");
             // create the slider UI
             createSliderUI(data);
-            var toolTip = '<b>' + 'Firestation Number:</b><br />' +
-                        layer.feature.properties.firestation;
-                    
-                    layer.bindTooltip(tooltip,{
-                         sticky: true
-                    });
+            
             
         }
+        
+        
 
         function createSliderUI(data) {
             var sliderControl = L.control({
@@ -270,6 +278,8 @@
             // return the array of markers
             return markersArray;
         }
+        
+        
 
     </script>
 
