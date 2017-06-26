@@ -28,13 +28,13 @@
             position: absolute;
             z-index: 650;
             top: 10px;
-            left: 55px;
+            left: 75px;
             padding: 8px 15px;
             margin: 0;
             color: whitesmoke;
             font-size: 1.5em;
             background: rgba(25, 25, 25, 0.8);
-            border-radius: 5px;
+            border-radius: 3px;
         }
         
         h2 {
@@ -52,12 +52,19 @@
             background: rgba(25, 25, 25, 0.8);
             border-radius: 5px;
         }
-        #map {
+       /* #map {
             position: absolute;
             width: 100%;
             top: 0;
             bottom: 0;
-        }
+        }*/
+        #map {
+			width: 960px;
+			height: 540px;
+			margin: 10px auto;
+			border: 2px solid #d3d3d3;
+		}
+        
         
         footer {
             padding: 6px 10%;
@@ -105,6 +112,8 @@
 <body>
     <h1>Seattle Fire and Medical Calls 2014 - 2016 </h1>
     
+   
+    
         <div id="map"></div>
     <div id="ui-controls">
         <label>2014.............2015.............2016</label>
@@ -112,7 +121,12 @@
     </div>
     
         
-    
+    <footer>
+        <p>Map authored by; Jack Smarr</p>
+        <p>Map of Seattle showing Fire Stations, 911 Fire Calls/Alarms, and 911 Medical Calls.</p>
+        <p>Source:https://catalog.data.gov/dataset/seattle-real-time-fire-911-calls-6cdf3</p>
+        <p>Inspiration: NPR News Story:http://www.npr.org/sections/health-shots/2017/04/11/523025987/why-send-a-firetruck-to-do-an-ambulances-job</p>
+</footer>
     
     
     
@@ -193,7 +207,12 @@
                         
                     })
                     
-                    
+                    var tooltip = '<b>' + ' Firestation Number:</b><br />' +
+                    layer.feature.firestation;  
+            
+                layer.bindTooltip(tooltip, {
+                    sticky: true
+                });
                     
                     
                     
